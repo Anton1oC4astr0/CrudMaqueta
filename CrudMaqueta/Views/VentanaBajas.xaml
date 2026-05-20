@@ -1,0 +1,57 @@
+<Window x:Class="CrudMaqueta.Views.VentanaBajas"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Eliminar Alumno" Height="470" Width="460"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="30">
+
+        <Label Content="Eliminar Alumno" FontSize="22" FontWeight="Bold"
+               HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
+        <Label Content="¿Deseas eliminar al siguiente alumno?"
+               HorizontalAlignment="Center" VerticalAlignment="Top"
+               Margin="0,55,0,0" FontSize="13" Foreground="#CC0000"/>
+
+        <Label Content="No. Control:" Margin="0,100,0,0"
+               VerticalAlignment="Top" FontSize="14"/>
+        <Label x:Name="lblNumControl" Content="---"
+               Margin="140,100,0,0" VerticalAlignment="Top"
+               FontSize="14" FontWeight="Bold" HorizontalAlignment="Left"/>
+
+        <Label Content="Nombre:" Margin="0,135,0,0"
+               VerticalAlignment="Top" FontSize="14"/>
+        <Label x:Name="lblNombre" Content="---"
+               Margin="140,135,0,0" VerticalAlignment="Top"
+               FontSize="14" HorizontalAlignment="Left"/>
+
+        <Label Content="Carrera:" Margin="0,170,0,0"
+               VerticalAlignment="Top" FontSize="14"/>
+        <Label x:Name="lblCarrera" Content="---"
+               Margin="140,170,0,0" VerticalAlignment="Top"
+               FontSize="14" HorizontalAlignment="Left"/>
+
+        <Label Content="Correo:" Margin="0,205,0,0"
+               VerticalAlignment="Top" FontSize="14"/>
+        <Label x:Name="lblCorreo" Content="---"
+               Margin="140,205,0,0" VerticalAlignment="Top"
+               FontSize="14" HorizontalAlignment="Left"/>
+
+        <Label Content="Discapacidad:" Margin="0,240,0,0"
+               VerticalAlignment="Top" FontSize="14"/>
+        <Label x:Name="lblDiscapacidad" Content="---"
+               Margin="140,240,0,0" VerticalAlignment="Top"
+               FontSize="14" HorizontalAlignment="Left"/>
+
+        <!-- SOLO el botón Eliminar (sin botón de modificar duplicado) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom" Margin="0,0,0,15">
+            <Button Content="Sí, Eliminar" Width="140" Height="35" FontSize="14"
+                    Background="#CC0000" Foreground="White"
+                    Margin="0,0,15,0"
+                    Click="btnEliminar_Click"/>
+            <Button Content="Cancelar" Width="120" Height="35" FontSize="14"
+                    Click="btnCancelar_Click"/>
+        </StackPanel>
+
+    </Grid>
+</Window>
