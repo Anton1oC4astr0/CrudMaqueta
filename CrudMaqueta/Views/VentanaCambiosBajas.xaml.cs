@@ -62,7 +62,7 @@ namespace CrudMaqueta.Views
 
             try
             {
-                List<Alumno> resultados = AlumnoRepositorioOracle.ObtenerDatos();
+                List<Alumno> resultados = AlumnoRepositorioOracle.ObtenerDatosTodo();
 
                 // Filtro por número de control (coincidencia parcial, case-insensitive)
                 if (!string.IsNullOrEmpty(numControl))
@@ -122,6 +122,8 @@ namespace CrudMaqueta.Views
             if (_modo == "Cambios")
             {
                 VentanaCambios ventana = new VentanaCambios(alumnoSeleccionado);
+                MessageBox.Show(
+this.IsLoaded.ToString());
                 ventana.Owner = this;
                 ventana.ShowDialog();
             }

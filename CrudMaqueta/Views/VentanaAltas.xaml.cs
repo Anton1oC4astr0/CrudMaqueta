@@ -7,6 +7,7 @@ using System.Windows.Media;
 using CrudMaqueta.Data;
 using CrudMaqueta.Models;
 using CrudMaqueta.Utils;
+using Oracle.ManagedDataAccess.Client;
 
 namespace CrudMaqueta.Views
 {
@@ -15,14 +16,132 @@ namespace CrudMaqueta.Views
         public VentanaAltas()
         {
             InitializeComponent();
-
+            CargarCarreras();
             // Bloquea pegar texto no numérico en la edad
-            DataObject.AddPastingHandler(txtEdad, (s, e) =>
-            {
-                string texto = (e.DataObject.GetData(typeof(string)) as string) ?? "";
-                if (!int.TryParse(texto, out _)) e.CancelCommand();
-            });
         }
+
+        private void CargarCarreras()
+        {
+            try
+            {
+                List<Carrera> carreas = CarrerasRepositorioOracle.ObtenerCarreras();
+                cbCarrera.ItemsSource = carreas;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                "Error al cargar las carreras. Por favor contacta al administrador.",
+                "Error del sistema",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+                btnGurdar.IsEnabled = false;
+
+            }
+        }
+        private void Window_Loaded(
+            object sender,
+            RoutedEventArgs e)
+        {
+            CargarDiscapacidades();
+        }
+        private void CargarDiscapacidades()
+        {
+            try
+            {
+                List<Discapacidad> lista = DiscapacidadRepositorioOracle.ObtenerDiscapacidades();
+
+                panelDiscapacidades.Children.Clear();
+
+                foreach (var d in lista)
+                {
+                    CheckBox chk =
+                        new CheckBox();
+
+                    chk.Content = d.nombre;
+
+                    chk.Tag = d.id_Discapacidad;
+
+                    chk.Margin = new Thickness(5);
+                    
+                    // EVENTOS
+                    chk.Checked += CheckBox_Checked;
+
+                    chk.Unchecked += CheckBox_Unchecked;
+
+
+                    panelDiscapacidades
+                        .Children
+                        .Add(chk);
+                }
+            
+            }
+            catch (Exception ex)
+            {
+                Logger.RegistrarError("VentanaAltas.CargarDiscapacidades", ex);
+                MessageBox.Show(
+                "Error al cargar las discapacidades. Por favor contacta al administrador.",
+                "Error del sistema",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            }
+        }
+
+        private void CheckBox_Checked(
+            object sender,
+            RoutedEventArgs e)
+        {
+            CheckBox actual =
+                sender as CheckBox;
+
+
+            if (actual.Content.ToString()
+                .Equals("Ninguna",
+                StringComparison
+                .OrdinalIgnoreCase))
+            {
+                btnOtra.IsEnabled = false;
+                pnlDiscapacida.Visibility = Visibility.Hidden;
+                foreach (CheckBox chk
+                    in panelDiscapacidades.Children)
+                {
+                    if (chk != actual)
+                    {
+                        chk.IsChecked =false;
+                        chk.IsEnabled =false;
+                    }
+                }
+            }
+            else
+            {
+                foreach (CheckBox chk
+                    in panelDiscapacidades.Children)
+                {
+                    if (chk.Content.ToString().Equals("Ninguna",StringComparison.OrdinalIgnoreCase))
+                    {
+                        chk.IsChecked =
+                            false;
+                    }
+                }
+            }
+        }
+
+        private void CheckBox_Unchecked(object sender,RoutedEventArgs e)
+        {
+            CheckBox actual = sender as CheckBox;
+
+            if (actual.Content.ToString().Equals("Ninguna",StringComparison.OrdinalIgnoreCase))
+            {
+                btnOtra.IsEnabled = true;
+                
+                foreach (CheckBox chk in panelDiscapacidades.Children)
+                {
+                    chk.IsEnabled =
+                        true;
+                }
+            }
+        }
+
 
         private int CalcularEdad(DateTime fechaNac)
         {
@@ -41,34 +160,6 @@ namespace CrudMaqueta.Views
 
         private void txtEdad_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (lblErrorEdad == null) return;
-
-            string texto = txtEdad.Text.Trim();
-
-            if (string.IsNullOrEmpty(texto))
-            {
-                lblErrorEdad.Visibility = Visibility.Collapsed;
-                txtEdad.ClearValue(Border.BorderBrushProperty);
-                return;
-            }
-
-            if (!int.TryParse(texto, out int edad))
-            {
-                lblErrorEdad.Text = "Debe ser un número";
-                lblErrorEdad.Visibility = Visibility.Visible;
-                txtEdad.BorderBrush = Brushes.Red;
-            }
-            else if (edad < 17 || edad > 80)
-            {
-                lblErrorEdad.Text = "Debe estar entre 17 y 80";
-                lblErrorEdad.Visibility = Visibility.Visible;
-                txtEdad.BorderBrush = Brushes.Red;
-            }
-            else
-            {
-                lblErrorEdad.Visibility = Visibility.Collapsed;
-                txtEdad.ClearValue(Border.BorderBrushProperty);
-            }
         }
 
         // ===== Validación en tiempo real: CORREO =====
@@ -105,28 +196,10 @@ namespace CrudMaqueta.Views
             }
         }
 
-        // ===== Discapacidad: muestra/oculta TextBox "Otra" =====
-        private void cbDiscapacidad_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (lblOtraDiscapacidad == null || txtOtraDiscapacidad == null) return;
-
-            if (cbDiscapacidad.SelectedItem is ComboBoxItem item &&
-                item.Content?.ToString() == "Otra")
-            {
-                lblOtraDiscapacidad.Visibility = Visibility.Visible;
-                txtOtraDiscapacidad.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                lblOtraDiscapacidad.Visibility = Visibility.Collapsed;
-                txtOtraDiscapacidad.Visibility = Visibility.Collapsed;
-                txtOtraDiscapacidad.Text = string.Empty;
-            }
-        }
-
         // ===== Guardar =====
         private void btnGuardar_Click(object sender, RoutedEventArgs e)
         {
+            // Validaciones básicas
             if (string.IsNullOrWhiteSpace(txtNumControl.Text))
             { MessageBox.Show("Ingresa el número de control."); txtNumControl.Focus(); return; }
 
@@ -146,51 +219,27 @@ namespace CrudMaqueta.Views
             if (dpFechaNac.SelectedDate == null)
             { MessageBox.Show("Selecciona la fecha de nacimiento."); dpFechaNac.Focus(); return; }
 
-            if (string.IsNullOrWhiteSpace(txtEdad.Text))
-            { MessageBox.Show("Ingresa la edad."); txtEdad.Focus(); return; }
-
-            if (!int.TryParse(txtEdad.Text, out int edad))
-            { MessageBox.Show("La edad debe ser un número entero."); txtEdad.Focus(); return; }
-
-            if (edad <= 0)
-            { MessageBox.Show("La edad debe ser mayor a 0."); txtEdad.Focus(); return; }
-
             int edadCalculada = CalcularEdad(dpFechaNac.SelectedDate.Value);
-            if (edad != edadCalculada)
-            {
-                MessageBox.Show($"La edad no coincide con la fecha de nacimiento.\n" +
-                                $"Edad ingresada: {edad}\nEdad correcta según la fecha: {edadCalculada}");
-                txtEdad.Focus(); return;
-            }
-
-            if (edad < 17 || edad > 80)
+           
+            if (edadCalculada < 17 || edadCalculada > 80)
             { MessageBox.Show("La edad debe estar entre 17 y 80 años."); dpFechaNac.Focus(); return; }
+           
 
-            if (cbDiscapacidad.SelectedItem == null)
-            { MessageBox.Show("Selecciona una discapacidad (o 'Ninguna')."); cbDiscapacidad.Focus(); return; }
-
-            string discapacidad = ((ComboBoxItem)cbDiscapacidad.SelectedItem).Content?.ToString() ?? "Ninguna";
-
-            if (discapacidad == "Otra")
-            {
-                if (string.IsNullOrWhiteSpace(txtOtraDiscapacidad.Text))
-                { MessageBox.Show("Especifica la discapacidad en el campo 'Especifique'."); txtOtraDiscapacidad.Focus(); return; }
-                discapacidad = txtOtraDiscapacidad.Text.Trim();
-            }
-
+            // Crear objeto Alumno con los datos ingresados
+            Carrera carreraselect = (Carrera)cbCarrera.SelectedItem;
             Alumno alumno = new Alumno
             {
                 NumeroControl = txtNumControl.Text.Trim().ToUpper(),
                 Nombre = txtNombre.Text.Trim(),
-                Carrera = ((ComboBoxItem)cbCarrera.SelectedItem).Content.ToString() ?? string.Empty,
+                id_Carrera = carreraselect.id_Carrera,
                 Correo = txtCorreo.Text.Trim(),
                 FechaNac = dpFechaNac.SelectedDate.Value.ToString("dd/MM/yyyy"),
-                Edad = edad,
-                Discapacidad = discapacidad
             };
+            
 
             try
             {
+                // Intentar guardar el alumno en la base de datos
                 bool guardado = AlumnoRepositorioOracle.Agregar(alumno);
                 if (guardado)
                 {
@@ -201,15 +250,84 @@ namespace CrudMaqueta.Views
                 {
                     MessageBox.Show($"El número de control '{alumno.NumeroControl}' ya existe.");
                 }
+                // Guardar las discapacidades seleccionadas para el alumno
+                foreach (CheckBox chk
+                  in panelDiscapacidades
+                  .Children)
+                {
+                    // Si el checkbox está marcado, guardar la discapacidad para el alumno
+                    if (chk.IsChecked == true)
+                    {
+                        int id =
+                            Convert.ToInt32(
+                                chk.Tag);
+
+
+                        AlumnoRepositorioOracle
+                        .GuardarDiscapacidad(
+                            txtNumControl.Text,
+                            id);
+                    }
+
+                }
+
             }
             catch (Exception ex)
             {
                 Logger.RegistrarError("VentanaAltas.btnGuardar_Click", ex);
-                MessageBox.Show("Ocurrió un error al guardar. Revisa el archivo errores.log.",
+                MessageBox.Show("Ocurrió un error al guardar. Consulta a tu administrador.",
                     "Error del sistema", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void btnCancelar_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void Calc_Fecha(object sender, SelectionChangedEventArgs e)
+        {
+            int edadCalculada = CalcularEdad(dpFechaNac.SelectedDate ?? DateTime.Today);
+            lblEdad.Content = $"Edad: {edadCalculada} años";
+        }
+
+        private void btnOtra_Click(object sender, RoutedEventArgs e)
+        {
+            pnlDiscapacida.Visibility = Visibility.Visible;
+        }
+
+        private void Cacelar_NuevaDisc(object sender, RoutedEventArgs e)
+        {
+            txtDiscapacidad.Clear();
+            pnlDiscapacida.Visibility = Visibility.Hidden;
+        }
+        // Método para guardar la nueva discapacidad en la base de datos
+        private void Guardar_Disc(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(txtDiscapacidad.Text))
+                {
+                    MessageBox.Show("Ingresa el nombre de la discapacidad.");
+                    txtDiscapacidad.Focus();
+                    return;
+                }
+                bool guardado = DiscapacidadRepositorioOracle.Agregar(new Discapacidad { nombre = txtDiscapacidad.Text.Trim() });
+                if (guardado)
+                {
+                    MessageBox.Show($"Discapacidad agregada correctamente.");
+                    txtDiscapacidad.Clear();
+                    pnlDiscapacida.Visibility = Visibility.Hidden;
+                    CargarDiscapacidades(); // Recarga las discapacidades para mostrar la nueva
+                }
+                else
+                {
+                    MessageBox.Show($"La discapacidad '{txtDiscapacidad.Text.Trim()}' ya existe.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.RegistrarError("VentanaAltas.Guardar_Disc", ex);
+                MessageBox.Show("Ocurrió un error al guardar la discapacidad. Discapacidad duplicada o existente.",
+                    "Error del sistema", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

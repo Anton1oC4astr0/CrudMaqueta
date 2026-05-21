@@ -33,8 +33,10 @@ BEGIN EXECUTE IMMEDIATE 'DROP TABLE DISCAPACIDADES_CAT CASCADE CONSTRAINTS'; EXC
 CREATE TABLE CARRERAS_CAT (
     ID_CARRERA   NUMBER(3)      NOT NULL,
     NOMBRE       VARCHAR2(80)   NOT NULL,
-    CONSTRAINT PK_CARRERAS_CAT PRIMARY KEY (ID_CARRERA),
-    CONSTRAINT UQ_CARRERAS_CAT_NOMBRE UNIQUE (NOMBRE)
+    CONSTRAINT PK_CARRERAS
+        PRIMARY KEY(ID_CARRERA),
+    CONSTRAINT UQ_CARRERA
+        UNIQUE(NOMBRE)
 );
 
 -- ---------------------------------------------------------------
@@ -43,9 +45,10 @@ CREATE TABLE CARRERAS_CAT (
 CREATE TABLE DISCAPACIDADES_CAT (
     ID_DISCAPACIDAD   NUMBER(3)      NOT NULL,
     NOMBRE            VARCHAR2(80)   NOT NULL,
-    CONSTRAINT PK_DISCAPACIDADES_CAT PRIMARY KEY (ID_DISCAPACIDAD),
-    CONSTRAINT UQ_DISCAPACIDADES_CAT_NOMBRE UNIQUE (NOMBRE)
-);
+    CONSTRAINT PK_DISCAPACIDAD
+        PRIMARY KEY(ID_DISCAPACIDAD),
+    CONSTRAINT UQ_DISCAPACIDAD
+        UNIQUE(NOMBRE));
 
 -- ---------------------------------------------------------------
 -- 4. Datos semilla del catálogo de Carreras
@@ -83,25 +86,39 @@ COMMIT;
 --      usuario elige "Otra" en la interfaz, se permite cualquier
 --      cadena.
 -- ---------------------------------------------------------------
-CREATE TABLE ALUMNOS (
-    NUMERO_CONTROL   VARCHAR2(15)   NOT NULL,
-    NOMBRE           VARCHAR2(120)  NOT NULL,
-    CARRERA          VARCHAR2(80)   NOT NULL,
-    CORREO           VARCHAR2(120)  NOT NULL,
-    FECHA_NAC        DATE           NOT NULL,
-    EDAD             NUMBER(3)      NOT NULL,
-    DISCAPACIDAD     VARCHAR2(80)   DEFAULT 'Ninguna' NOT NULL,
-
-    CONSTRAINT PK_ALUMNOS                PRIMARY KEY (NUMERO_CONTROL),
-    CONSTRAINT UQ_ALUMNOS_CORREO         UNIQUE (CORREO),
-    CONSTRAINT CK_ALUMNOS_EDAD           CHECK (EDAD BETWEEN 15 AND 100),
-    CONSTRAINT CK_ALUMNOS_CORREO_FORMATO CHECK (REGEXP_LIKE(CORREO, '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$')),
-    CONSTRAINT FK_ALUMNOS_CARRERA        FOREIGN KEY (CARRERA)
-        REFERENCES CARRERAS_CAT(NOMBRE)
-);
+CREATE TABLE ALUMNOS(
+    NUMERO_CONTROL VARCHAR2(15) NOT NULL,
+    NOMBRE VARCHAR2(120)
+        NOT NULL,
+    CORREO VARCHAR2(120)
+        NOT NULL,
+    FECHA_NAC DATE
+        NOT NULL,
+    ID_CARRERA NUMBER
+        NOT NULL,
+    ID_DISCAPACIDAD NUMBER
+        DEFAULT NULL,
+    CONSTRAINT PK_ALUMNOS
+        PRIMARY KEY(NUMERO_CONTROL),
+    CONSTRAINT UQ_CORREO
+        UNIQUE(CORREO),
+    CONSTRAINT CK_CORREO
+        CHECK(
+            REGEXP_LIKE(
+                CORREO,
+                '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+            )
+        ),
+    CONSTRAINT FK_CARRERA
+        FOREIGN KEY(ID_CARRERA)
+        REFERENCES CARRERAS_CAT(ID_CARRERA),
+    CONSTRAINT FK_DISCAPACIDAD
+        FOREIGN KEY(ID_DISCAPACIDAD)
+        REFERENCES DISCAPACIDADES_CAT(ID_DISCAPACIDAD));
 
 -- Índices auxiliares para acelerar búsqueda por carrera
 CREATE INDEX IDX_ALUMNOS_CARRERA ON ALUMNOS(CARRERA);
+
 
 -- ---------------------------------------------------------------
 -- 7. Trigger de validación de DISCAPACIDAD

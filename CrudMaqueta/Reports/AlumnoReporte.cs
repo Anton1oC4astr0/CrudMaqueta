@@ -109,12 +109,9 @@ namespace CrudMaqueta.Reports
                                 filaPar = !filaPar;
                                 tabla.Cell().Background(colorFila).Padding(5).Text(alumno.NumeroControl);
                                 tabla.Cell().Background(colorFila).Padding(5).Text(alumno.Nombre);
-                                tabla.Cell().Background(colorFila).Padding(5).Text(alumno.Carrera);
+                                tabla.Cell().Background(colorFila).Padding(5).Text(alumno.id_Carrera);
                                 tabla.Cell().Background(colorFila).Padding(5).Text(alumno.Correo);
                                 tabla.Cell().Background(colorFila).Padding(5).Text(alumno.FechaNac);
-                                tabla.Cell().Background(colorFila).Padding(5).Text(alumno.Edad.ToString());
-                                tabla.Cell().Background(colorFila).Padding(5)
-                                     .Text(string.IsNullOrWhiteSpace(alumno.Discapacidad) ? "Ninguna" : alumno.Discapacidad);
                             }
                         });
  

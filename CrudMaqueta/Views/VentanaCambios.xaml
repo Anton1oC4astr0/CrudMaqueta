@@ -3,93 +3,77 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Editar Alumno" Height="600" Width="620"
         WindowStartupLocation="CenterScreen">
-    <Grid Margin="30">
+    <Grid Margin="30,30,30,7">
 
-        <Label Content="Editar Alumno" FontSize="22" FontWeight="Bold"
-               HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <Label Content="Alta de Alumno" FontSize="22" FontWeight="Bold"
+           HorizontalAlignment="Center" VerticalAlignment="Top"/>
 
         <Label Content="No. Control:" Margin="0,60,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
+           VerticalAlignment="Top" FontSize="14"/>
         <TextBox x:Name="txtNumControl" Margin="140,63,0,0" Width="300"
-                 Height="28" VerticalAlignment="Top" FontSize="14"
-                 HorizontalAlignment="Left"
-                 IsReadOnly="True" Background="#FFE5E5E5"/>
+             Height="28" VerticalAlignment="Top" FontSize="14"
+             HorizontalAlignment="Left"/>
 
         <Label Content="Nombre:" Margin="0,105,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
+           VerticalAlignment="Top" FontSize="14"/>
         <TextBox x:Name="txtNombre" Margin="140,108,0,0" Width="300"
-                 Height="28" VerticalAlignment="Top" FontSize="14"
-                 HorizontalAlignment="Left"/>
+             Height="28" VerticalAlignment="Top" FontSize="14"
+             HorizontalAlignment="Left"/>
 
-        <Label Content="Carrera:" Margin="0,150,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
-        <ComboBox x:Name="cbCarrera" Margin="140,153,0,0" Width="300"
-                  Height="28" VerticalAlignment="Top" FontSize="14"
-                  HorizontalAlignment="Left">
-            <ComboBoxItem Content="Sistemas Computacionales"/>
-            <ComboBoxItem Content="Industrial"/>
-            <ComboBoxItem Content="Electronica"/>
-            <ComboBoxItem Content="Civil"/>
-            <ComboBoxItem Content="Mecatronica"/>
-        </ComboBox>
+        <Label Content="Carrera:" Margin="0,150,432,0"
+           VerticalAlignment="Top" FontSize="14"/>
 
         <Label Content="Correo:" Margin="0,195,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
+           VerticalAlignment="Top" FontSize="14"/>
         <TextBox x:Name="txtCorreo" Margin="140,198,0,0" Width="300"
-                 Height="28" VerticalAlignment="Top" FontSize="14"
-                 HorizontalAlignment="Left"
-                 LostFocus="txtCorreo_LostFocus"
-                 TextChanged="txtCorreo_TextChanged"/>
+             Height="28" VerticalAlignment="Top" FontSize="14"
+             HorizontalAlignment="Left"
+             LostFocus="txtCorreo_LostFocus"
+             TextChanged="txtCorreo_TextChanged"/>
         <TextBlock x:Name="lblErrorCorreo" Margin="450,204,0,0" Width="110"
-                   VerticalAlignment="Top" FontSize="11" Foreground="Red"
-                   HorizontalAlignment="Left" Visibility="Collapsed"
-                   TextWrapping="Wrap"/>
+               VerticalAlignment="Top" FontSize="11" Foreground="Red"
+               HorizontalAlignment="Left" Visibility="Collapsed"
+               TextWrapping="Wrap"/>
 
         <Label Content="Fecha Nac:" Margin="0,240,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
-        <DatePicker x:Name="dpFechaNac" Margin="140,243,0,0" Width="300"
-                    Height="28" VerticalAlignment="Top" FontSize="14"
-                    HorizontalAlignment="Left"/>
+           VerticalAlignment="Top" FontSize="14"/>
+        <DatePicker x:Name="dpFechaNac" Margin="140,243,0,0" Width="192"
+                Height="28" VerticalAlignment="Top" FontSize="14"
+                HorizontalAlignment="Left" SelectedDateChanged="Calc_Fecha"/>
 
-        <Label Content="Edad:" Margin="0,285,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
-        <TextBox x:Name="txtEdad" Margin="140,288,0,0" Width="100"
-                 Height="28" VerticalAlignment="Top" FontSize="14"
-                 HorizontalAlignment="Left"
-                 PreviewTextInput="txtEdad_PreviewTextInput"
-                 TextChanged="txtEdad_TextChanged"/>
-        <TextBlock x:Name="lblErrorEdad" Margin="250,294,0,0" Width="280"
-                   VerticalAlignment="Top" FontSize="11" Foreground="Red"
-                   HorizontalAlignment="Left" Visibility="Collapsed"/>
+        <Label x:Name="lblEdad" Content="Edad:" Margin="347,243,53,0"
+           VerticalAlignment="Top" FontSize="14"/>
 
-        <Label Content="Discapacidad:" Margin="0,330,0,0"
-               VerticalAlignment="Top" FontSize="14"/>
-        <ComboBox x:Name="cbDiscapacidad" Margin="140,333,0,0" Width="300"
-                  Height="28" VerticalAlignment="Top" FontSize="14"
-                  HorizontalAlignment="Left"
-                  SelectionChanged="cbDiscapacidad_SelectionChanged">
-            <ComboBoxItem Content="Ninguna" IsSelected="True"/>
-            <ComboBoxItem Content="Visual"/>
-            <ComboBoxItem Content="Auditiva"/>
-            <ComboBoxItem Content="Motriz"/>
-            <ComboBoxItem Content="Cognitiva"/>
-            <ComboBoxItem Content="Psicosocial"/>
-            <ComboBoxItem Content="Lenguaje"/>
-            <ComboBoxItem Content="Otra"/>
-        </ComboBox>
+        <Label Content="Discapacidad:" Margin="0,294,432,0"
+           VerticalAlignment="Top" FontSize="14"/>
+        <GroupBox Header="Discapacidades" Margin="140,294,10,136">
+            <WrapPanel
+        x:Name="panelDiscapacidades" Margin="0,0,-2,0"/>
+        </GroupBox>
 
         <Label x:Name="lblOtraDiscapacidad" Content="Especifique:" Margin="0,375,0,0"
-               VerticalAlignment="Top" FontSize="14" Visibility="Collapsed"/>
+           VerticalAlignment="Top" FontSize="14" Visibility="Collapsed"/>
         <TextBox x:Name="txtOtraDiscapacidad" Margin="140,378,0,0" Width="300"
-                 Height="28" VerticalAlignment="Top" FontSize="14"
-                 HorizontalAlignment="Left" Visibility="Collapsed"/>
+             Height="28" VerticalAlignment="Top" FontSize="14"
+             HorizontalAlignment="Left" Visibility="Collapsed"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
-                    VerticalAlignment="Bottom" Margin="0,0,0,15">
-            <Button Content="Actualizar" Width="120" Height="35" FontSize="14"
-                    Margin="0,0,20,0" Click="btnActualizar_Click"/>
-            <Button Content="Cancelar" Width="120" Height="35" FontSize="14"
-                    Click="btnCancelar_Click"/>
+                VerticalAlignment="Bottom" Margin="0,0,0,15">
+            <Button x:Name="btnGurdar" Content="Guardar" Width="110" Height="35" FontSize="14"
+                Margin="0,0,20,0" Click="btnGuardar_Click"/>
+            <Button Content="Cancelar" Width="110" Height="35" FontSize="14"
+                Click="btnCancelar_Click"/>
         </StackPanel>
+        <Button x:Name="btnOtra" Content="Otra" HorizontalAlignment="Left" Margin="140,395,0,0" VerticalAlignment="Top" Width="49" Click="btnOtra_Click" FontSize="16"/>
+        <StackPanel x:Name="pnlDiscapacida" Orientation="Horizontal" HorizontalAlignment="Left" Margin="140,425,0,0" VerticalAlignment="Top" Width="403" Visibility="Hidden">
+            <TextBox x:Name="txtDiscapacidad" TextWrapping="Wrap" Width="256" Height="32"/>
+            <Border BorderBrush="Black" BorderThickness="1" Width="25" Visibility="Hidden"/>
+            <Button x:Name="btnGuardarDisc" Content="Guardar" Click="Guardar_Disc"/>
+            <Border BorderBrush="Black" BorderThickness="1" Width="25" Visibility="Hidden"/>
+            <Button x:Name="btnCancelDisc" Content="Cancelar" Click="Cacelar_NuevaDisc"/>
+        </StackPanel>
+        <ComboBox x:Name="cbCarrera" HorizontalAlignment="Left" Margin="140,150,0,0" VerticalAlignment="Top" Width="300" Height="28"
+              SelectedValue="id_Carrera" DisplayMemberPath="nombre"/>
+
     </Grid>
 </Window>

@@ -24,7 +24,7 @@ namespace CrudMaqueta.Views
         {
             try
             {
-                _todosLosAlumnos = AlumnoRepositorioOracle.ObtenerDatos();
+                _todosLosAlumnos = AlumnoRepositorioOracle.ObtenerDatosTodo();
                 dgAlumnos.ItemsSource = _todosLosAlumnos;
             }
             catch (Exception ex)
@@ -46,20 +46,6 @@ namespace CrudMaqueta.Views
 
             if (carrera != "Todas")
                 consulta = consulta.Where(a => a.Carrera == carrera);
-
-            if (discapacidad != "Todas")
-            {
-                if (discapacidad == "Otra")
-                {
-                    string[] catalogo = { "Ninguna", "Visual", "Auditiva", "Motriz",
-                                          "Cognitiva", "Psicosocial", "Lenguaje" };
-                    consulta = consulta.Where(a => !catalogo.Contains(a.Discapacidad));
-                }
-                else
-                {
-                    consulta = consulta.Where(a => a.Discapacidad == discapacidad);
-                }
-            }
 
             dgAlumnos.ItemsSource = consulta.ToList();
         }

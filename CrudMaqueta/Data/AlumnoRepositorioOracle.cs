@@ -12,43 +12,27 @@ namespace CrudMaqueta.Data
     /// </summary>
     public static class AlumnoRepositorioOracle
     {
-        private static string _cadenaConexion =
-            "User Id=HR_ITT;Password=HR2026;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl19c)))";
 
         // ============ AGREGAR ============
         public static bool Agregar(Alumno alumno)
         {
             try
             {
-                using (OracleConnection conexion = new OracleConnection(_cadenaConexion))
+                using (OracleConnection conexion = Conexion.Obtenercon())
                 {
                     conexion.Open();
-
-                    string sqlVerificar = "SELECT COUNT(*) FROM ALUMNOS WHERE NUMERO_CONTROL = :numControl";
-                    using (OracleCommand cmdVerificar = new OracleCommand(sqlVerificar, conexion))
-                    {
-                        cmdVerificar.BindByName = true;
-                        cmdVerificar.Parameters.Add(":numControl", alumno.NumeroControl);
-                        int count = Convert.ToInt32(cmdVerificar.ExecuteScalar());
-                        if (count > 0) return false;
-                    }
-
                     string sqlInsertar = @"INSERT INTO ALUMNOS
-                                      (NUMERO_CONTROL, NOMBRE, CARRERA, CORREO, FECHA_NAC, EDAD, DISCAPACIDAD)
+                                      (NUMERO_CONTROL, NOMBRE, ID_CARRERA, CORREO, FECHA_NAC)
                                       VALUES
-                                      (:numControl, :nombre, :carrera, :correo, TO_DATE(:fechaNac, 'DD/MM/YYYY'), :edad, :discapacidad)";
-
+                                      (:numControl, :nombre, :id_carrera, :correo, TO_DATE(:fechaNac, 'DD/MM/YYYY'))";
                     using (OracleCommand cmdInsertar = new OracleCommand(sqlInsertar, conexion))
                     {
                         cmdInsertar.BindByName = true;
                         cmdInsertar.Parameters.Add(":numControl", alumno.NumeroControl);
                         cmdInsertar.Parameters.Add(":nombre", alumno.Nombre);
-                        cmdInsertar.Parameters.Add(":carrera", alumno.Carrera);
+                        cmdInsertar.Parameters.Add(":id_carrera", alumno.id_Carrera);
                         cmdInsertar.Parameters.Add(":correo", alumno.Correo);
                         cmdInsertar.Parameters.Add(":fechaNac", alumno.FechaNac);
-                        cmdInsertar.Parameters.Add(":edad", alumno.Edad);
-                        cmdInsertar.Parameters.Add(":discapacidad",
-                            string.IsNullOrWhiteSpace(alumno.Discapacidad) ? "Ninguna" : alumno.Discapacidad);
                         cmdInsertar.ExecuteNonQuery();
                     }
                 }
@@ -62,18 +46,25 @@ namespace CrudMaqueta.Data
         }
 
         // ============ OBTENER TODOS ============
-        public static List<Alumno> ObtenerDatos()
+        public static List<Alumno> ObtenerDatosTodo()
         {
             List<Alumno> lista = new List<Alumno>();
             try
             {
-                using (OracleConnection conexion = new OracleConnection(_cadenaConexion))
+                using (OracleConnection conexion = Conexion.Obtenercon())
                 {
                     conexion.Open();
 
-                    string sql = @"SELECT NUMERO_CONTROL, NOMBRE, CARRERA, CORREO, FECHA_NAC, EDAD, DISCAPACIDAD
-                                   FROM ALUMNOS
-                                   ORDER BY NUMERO_CONTROL";
+                    string sql = @"SELECT A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE AS CARRERA,LISTAGG(D.NOMBRE,', ')
+                                    WITHIN GROUP(ORDER BY D.NOMBRE)
+                                    AS DISCAPACIDADES
+                                    FROM ALUMNOS A 
+                                    JOIN CARRERAS_CAT C ON A.ID_CARRERA = C.ID_CARRERA 
+                                    LEFT JOIN ALUMNOS_DISCAPACIDADES AD
+                                    ON A.NUMERO_CONTROL = AD.NUMERO_CONTROL
+                                    LEFT JOIN DISCAPACIDADES_CAT D 
+                                    ON AD.ID_DISCAPACIDAD = D.ID_DISCAPACIDAD
+                                    GROUP BY A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE";
 
                     using (OracleCommand cmd = new OracleCommand(sql, conexion))
                     using (OracleDataReader reader = cmd.ExecuteReader())
@@ -86,11 +77,8 @@ namespace CrudMaqueta.Data
                                 Nombre = reader["NOMBRE"].ToString() ?? string.Empty,
                                 Carrera = reader["CARRERA"].ToString() ?? string.Empty,
                                 Correo = reader["CORREO"].ToString() ?? string.Empty,
-                                FechaNac = Convert.ToDateTime(reader["FECHA_NAC"]).ToString("dd/MM/yyyy"),
-                                Edad = Convert.ToInt32(reader["EDAD"]),
-                                Discapacidad = reader["DISCAPACIDAD"] == DBNull.Value
-                                    ? "Ninguna"
-                                    : reader["DISCAPACIDAD"].ToString() ?? "Ninguna"
+                                FechaNac = reader["FECHA_NAC"].ToString() ?? string.Empty,
+                                Discapacidad = reader["DISCAPACIDADES"].ToString() ?? string.Empty
                             };
                             lista.Add(alumno);
                         }
@@ -110,11 +98,11 @@ namespace CrudMaqueta.Data
         {
             try
             {
-                using (OracleConnection conexion = new OracleConnection(_cadenaConexion))
+                using (OracleConnection conexion = Conexion.Obtenercon())
                 {
                     conexion.Open();
 
-                    string sql = @"SELECT NUMERO_CONTROL, NOMBRE, CARRERA, CORREO, FECHA_NAC, EDAD, DISCAPACIDAD
+                    string sql = @"SELECT NUMERO_CONTROL, NOMBRE, ID_CARRERA, CORREO, FECHA_NAC
                                    FROM ALUMNOS
                                    WHERE NUMERO_CONTROL = :numControl";
 
@@ -131,13 +119,9 @@ namespace CrudMaqueta.Data
                                 {
                                     NumeroControl = reader["NUMERO_CONTROL"].ToString() ?? string.Empty,
                                     Nombre = reader["NOMBRE"].ToString() ?? string.Empty,
-                                    Carrera = reader["CARRERA"].ToString() ?? string.Empty,
+                                    id_Carrera = Convert.ToInt32(reader["ID_CARRERA"]),
                                     Correo = reader["CORREO"].ToString() ?? string.Empty,
                                     FechaNac = Convert.ToDateTime(reader["FECHA_NAC"]).ToString("dd/MM/yyyy"),
-                                    Edad = Convert.ToInt32(reader["EDAD"]),
-                                    Discapacidad = reader["DISCAPACIDAD"] == DBNull.Value
-                                        ? "Ninguna"
-                                        : reader["DISCAPACIDAD"].ToString() ?? "Ninguna"
                                 };
                             }
                         }
@@ -157,31 +141,24 @@ namespace CrudMaqueta.Data
         {
             try
             {
-                using (OracleConnection conexion = new OracleConnection(_cadenaConexion))
+                using (OracleConnection conexion = Conexion.Obtenercon())
                 {
                     conexion.Open();
 
                     string sql = @"UPDATE ALUMNOS
                                    SET NOMBRE = :nombre,
-                                       CARRERA = :carrera,
+                                       ID_CARRERA = :id_Carrera,
                                        CORREO = :correo,
-                                       FECHA_NAC = TO_DATE(:fechaNac, 'DD/MM/YYYY'),
-                                       EDAD = :edad,
-                                       DISCAPACIDAD = :discapacidad
+                                       FECHA_NAC = TO_DATE(:fechaNac, 'DD/MM/YYYY')
                                    WHERE NUMERO_CONTROL = :numControl";
 
                     using (OracleCommand cmd = new OracleCommand(sql, conexion))
                     {
                         cmd.BindByName = true;
                         cmd.Parameters.Add(":nombre", alumno.Nombre);
-                        cmd.Parameters.Add(":carrera", alumno.Carrera);
+                        cmd.Parameters.Add(":id_Carrera", alumno.id_Carrera);
                         cmd.Parameters.Add(":correo", alumno.Correo);
                         cmd.Parameters.Add(":fechaNac", alumno.FechaNac);
-                        cmd.Parameters.Add(":edad", alumno.Edad);
-                        cmd.Parameters.Add(":discapacidad",
-                            string.IsNullOrWhiteSpace(alumno.Discapacidad) ? "Ninguna" : alumno.Discapacidad);
-                        cmd.Parameters.Add(":numControl", alumno.NumeroControl.Trim());
-
                         int filasAfectadas = cmd.ExecuteNonQuery();
                         return filasAfectadas > 0;
                     }
@@ -199,7 +176,7 @@ namespace CrudMaqueta.Data
         {
             try
             {
-                using (OracleConnection conexion = new OracleConnection(_cadenaConexion))
+                using (OracleConnection conexion = Conexion.Obtenercon())
                 {
                     conexion.Open();
 
@@ -220,6 +197,76 @@ namespace CrudMaqueta.Data
                 Logger.RegistrarError("AlumnoRepositorioOracle.Eliminar", ex);
                 throw;
             }
+        }
+        // ============ GUARDAR DISCAPACIDAD ============
+        public static void GuardarDiscapacidad(string control, int idDiscapacidad)
+        {
+            using OracleConnection con = Conexion.Obtenercon();
+            con.Open();
+            string sql =
+            @"INSERT INTO
+            ALUMNOS_DISCAPACIDADES
+            (NUMERO_CONTROL,ID_DISCAPACIDAD)
+            VALUES
+            (:NumeroControl,:id_discapacidad)";
+            OracleCommand cmd =
+                new(sql, con);
+            cmd.Parameters.Add(":NumeroControl", control);
+            cmd.Parameters.Add(":id_discapacidad", idDiscapacidad);
+            cmd.ExecuteNonQuery();
+        }
+
+        // OBTENER ALUMNOS POR NUMERO DE CONTROL
+
+        public static Alumno ObtenerALumnoPorNumeroControl(string numeroControl)
+        {
+            Alumno alumno = new Alumno();
+            try
+            {
+                using (OracleConnection conexion = Conexion.Obtenercon())
+                {
+                    conexion.Open();
+                    string sql =
+                        @"SELECT A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE AS CARRERA,LISTAGG(D.NOMBRE,', ')
+                            WITHIN GROUP(
+                            ORDER BY D.NOMBRE) AS DISCAPACIDADES
+                            FROM ALUMNOS A
+                            JOIN CARRERAS_CAT C
+                            ON A.ID_CARRERA = C.ID_CARRERA 
+                                LEFT JOIN ALUMNOS_DISCAPACIDADES AD
+                            ON A.NUMERO_CONTROL = AD.NUMERO_CONTROL
+                                LEFT JOIN DISCAPACIDADES_CAT D
+                            ON AD.ID_DISCAPACIDAD = D.ID_DISCAPACIDAD
+                            WHERE
+                            A.NUMERO_CONTROL = :numeroControl
+                            GROUP BY
+                            A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE";
+                    using (OracleCommand cmd = new OracleCommand(sql, conexion))
+                    {
+                        cmd.BindByName = true;
+                        cmd.Parameters.Add(":numControl", numeroControl.Trim());
+                        using (OracleDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                alumno.NumeroControl = reader["NUMERO_CONTROL"].ToString() ?? string.Empty;
+                                alumno.Nombre = reader["NOMBRE"].ToString() ?? string.Empty;
+                                alumno.Correo = reader["CORREO"].ToString() ?? string.Empty;
+                                alumno.FechaNac = Convert.ToDateTime(reader["FECHA_NAC"]).ToString("dd/MM/yyyy");
+                                alumno.id_Carrera = Convert.ToInt32(reader["ID_CARRERA"]);
+                                alumno.Ids_Discapacidades = reader["DISCAPACIDADES"].ToString() ?? string.Empty;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.RegistrarError("AlumnoRepositorioOracle.ObtenerAlumnoPorNumeroControl", ex);
+                throw;
+            }
+            return alumno;
+
         }
     }
 }

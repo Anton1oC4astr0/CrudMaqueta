@@ -21,10 +21,8 @@ namespace CrudMaqueta.Views
         {
             lblNumControl.Content = _alumnoBaja.NumeroControl;
             lblNombre.Content = _alumnoBaja.Nombre;
-            lblCarrera.Content = _alumnoBaja.Carrera;
+            lblCarrera.Content = _alumnoBaja.id_Carrera;
             lblCorreo.Content = _alumnoBaja.Correo;
-            lblDiscapacidad.Content = string.IsNullOrWhiteSpace(_alumnoBaja.Discapacidad)
-                ? "Ninguna" : _alumnoBaja.Discapacidad;
         }
 
         private void btnEliminar_Click(object sender, RoutedEventArgs e)
