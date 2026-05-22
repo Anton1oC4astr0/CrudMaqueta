@@ -12,12 +12,14 @@ namespace CrudMaqueta.Views
 {
     public partial class VentanaCambios : Window
     {
-       
+        private readonly Alumno _alumnoCambiar;
         public VentanaCambios(Alumno alumno)
         {
             InitializeComponent();
-            PreLlenarFormulario(alumno.NumeroControl);
+            _alumnoCambiar = alumno;
+            PreLlenarFormulario(_alumnoCambiar);
             CargarCarreras();
+            CargarDiscapacidades();
 
         }
         private void CargarCarreras()
@@ -69,8 +71,6 @@ namespace CrudMaqueta.Views
                     chk.Checked += CheckBox_Checked;
 
                     chk.Unchecked += CheckBox_Unchecked;
-
-
                     panelDiscapacidades
                         .Children
                         .Add(chk);
@@ -151,46 +151,47 @@ namespace CrudMaqueta.Views
             if (fechaNac.Date > hoy.AddYears(-edad)) edad--;
             return edad;
         }
-
-        private void PreLlenarFormulario(string numeroControl)
+        // Marcar las discapacidades del alumno al cargar el formulario
+        private void MarcarDiscapacidadesAlumno(Alumno alumno)
         {
-
-            try
+            if (string.IsNullOrEmpty(alumno.Ids_Discapacidades)) return;
+            string[] ids = alumno.Ids_Discapacidades.Split(',');
+            foreach (string id in ids)
             {
-                
-                Alumno alumno = AlumnoRepositorioOracle.ObtenerALumnoPorNumeroControl(numeroControl);
-                if (alumno != null)
+                foreach (CheckBox chk in panelDiscapacidades.Children)
                 {
-                    txtNumControl.Text = alumno.NumeroControl;
-                    txtNombre.Text = alumno.Nombre;
-                    txtCorreo.Text = alumno.Correo;
-                    dpFechaNac.SelectedDate = DateTime.ParseExact(alumno.FechaNac, "dd/MM/yyyy", null);
-                    lblEdad.Content = CalcularEdad(dpFechaNac.SelectedDate.Value).ToString();
-                    cbCarrera.SelectedValue = alumno.Carrera;
-                    // llenar checkboxes de discapacidades
-                    string [] discapacidades = alumno.Discapacidad.Split(',');
-
-                    foreach (CheckBox chk in panelDiscapacidades.Children)
+                    if (chk.Tag.ToString() == id.Trim())
                     {
-                       int id = (int)chk.Tag;
-                        chk.IsChecked = discapacidades.Contains(id.ToString(), StringComparer.OrdinalIgnoreCase);
+                        chk.IsChecked = true;
+                        break;
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Alumno no encontrado.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
             }
-            catch (Exception ex)
+        }
+
+
+        // ===== Prellenado del formulario con los datos del alumno a modificar =====
+        private void PreLlenarFormulario(Alumno alumno)
+        { 
+           
+            txtNumControl.Text = alumno.NumeroControl;
+            txtNumControl.IsEnabled = false; // No se puede cambiar el número de control
+            txtNombre.Text = alumno.Nombre;
+            txtCorreo.Text = alumno.Correo;
+            if (alumno.id_Carrera != 0)
             {
-                Logger.RegistrarError("VentanaCambios.PreLlenarFormulario", ex);
-                MessageBox.Show("Ocurrió un error al cargar los datos del alumno. Revisa el archivo errores.log.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Close();
+                cbCarrera.SelectedValue = alumno.id_Carrera;
+                cbCarrera.DisplayMemberPath = "nombre";
             }
-            finally
+            if (DateTime.TryParse(alumno.FechaNac, out DateTime fechaNac))
             {
+                dpFechaNac.SelectedDate = fechaNac;
+                lblEdad.Content = $"Edad: {CalcularEdad(fechaNac)} años";
             }
+            //Cargar discapacidades del alumno
+            MarcarDiscapacidadesAlumno(alumno);
+
+
         }
 
         // ===== Validación en tiempo real: EDAD =====
@@ -266,18 +267,32 @@ namespace CrudMaqueta.Views
             Carrera carreraSeleccionada = (Carrera)cbCarrera.SelectedItem;
             Alumno alumnoActualizado = new Alumno
             {
-                NumeroControl = txtNumControl.Text.Trim(),
+                NumeroControl = _alumnoCambiar.NumeroControl,
                 Nombre = txtNombre.Text.Trim(),
                 Correo = txtCorreo.Text.Trim(),
                 id_Carrera = carreraSeleccionada.id_Carrera,
                 FechaNac = dpFechaNac.SelectedDate.Value.ToString("dd/MM/yyyy"),
+                
             };
 
             try
             {
+
+
                 bool exito = AlumnoRepositorioOracle.Actualizar(alumnoActualizado);
                 if (exito)
                 {
+                    //Eliminar las discapacidades anteriores y guardar las nuevas
+                    AlumnoRepositorioOracle.EliminarDiscapacidades(alumnoActualizado.NumeroControl);
+                    // Guardar las discapacidades seleccionadas
+                    foreach (CheckBox chk in panelDiscapacidades.Children)
+                    {
+                        if (chk.IsChecked == true)
+                        {
+                            int idDisc = (int)chk.Tag;
+                            AlumnoRepositorioOracle.GuardarDiscapacidad(alumnoActualizado.NumeroControl, idDisc);
+                        }
+                    }
                     MessageBox.Show("Alumno actualizado correctamente.");
                     Close();
                 }

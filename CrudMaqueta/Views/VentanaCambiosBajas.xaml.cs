@@ -118,22 +118,19 @@ namespace CrudMaqueta.Views
                     MessageBoxImage.Warning);
                 return;
             }
-
-            if (_modo == "Cambios")
-            {
-                VentanaCambios ventana = new VentanaCambios(alumnoSeleccionado);
-                MessageBox.Show(
-this.IsLoaded.ToString());
-                ventana.Owner = this;
-                ventana.ShowDialog();
-            }
-            else // "Bajas"
+            if (_modo == "Bajas")
             {
                 VentanaBajas ventana = new VentanaBajas(alumnoSeleccionado);
                 ventana.Owner = this;
                 ventana.ShowDialog();
-            }
 
+            }
+            else {
+                VentanaCambios ventana = new VentanaCambios(alumnoSeleccionado);
+                ventana.Owner = this;
+                ventana.ShowDialog();
+            }
+             
             // Refrescar resultados con los mismos filtros
             btnBuscar_Click(sender, e);
         }

@@ -155,6 +155,7 @@ namespace CrudMaqueta.Data
                     using (OracleCommand cmd = new OracleCommand(sql, conexion))
                     {
                         cmd.BindByName = true;
+                        cmd.Parameters.Add(":numControl", alumno.NumeroControl);
                         cmd.Parameters.Add(":nombre", alumno.Nombre);
                         cmd.Parameters.Add(":id_Carrera", alumno.id_Carrera);
                         cmd.Parameters.Add(":correo", alumno.Correo);
@@ -163,6 +164,7 @@ namespace CrudMaqueta.Data
                         return filasAfectadas > 0;
                     }
                 }
+
             }
             catch (Exception ex)
             {
@@ -215,58 +217,19 @@ namespace CrudMaqueta.Data
             cmd.Parameters.Add(":id_discapacidad", idDiscapacidad);
             cmd.ExecuteNonQuery();
         }
-
-        // OBTENER ALUMNOS POR NUMERO DE CONTROL
-
-        public static Alumno ObtenerALumnoPorNumeroControl(string numeroControl)
+        // ============ ELIMINAR DISCAPACIDADES DE UN ALUMNO (ANTES DE GUARDAR LAS NUEVAS) ============
+        public static void EliminarDiscapacidades(string numcontrol)
         {
-            Alumno alumno = new Alumno();
-            try
-            {
-                using (OracleConnection conexion = Conexion.Obtenercon())
-                {
-                    conexion.Open();
-                    string sql =
-                        @"SELECT A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE AS CARRERA,LISTAGG(D.NOMBRE,', ')
-                            WITHIN GROUP(
-                            ORDER BY D.NOMBRE) AS DISCAPACIDADES
-                            FROM ALUMNOS A
-                            JOIN CARRERAS_CAT C
-                            ON A.ID_CARRERA = C.ID_CARRERA 
-                                LEFT JOIN ALUMNOS_DISCAPACIDADES AD
-                            ON A.NUMERO_CONTROL = AD.NUMERO_CONTROL
-                                LEFT JOIN DISCAPACIDADES_CAT D
-                            ON AD.ID_DISCAPACIDAD = D.ID_DISCAPACIDAD
-                            WHERE
-                            A.NUMERO_CONTROL = :numeroControl
-                            GROUP BY
-                            A.NUMERO_CONTROL,A.NOMBRE,A.CORREO,A.FECHA_NAC,C.NOMBRE";
-                    using (OracleCommand cmd = new OracleCommand(sql, conexion))
-                    {
-                        cmd.BindByName = true;
-                        cmd.Parameters.Add(":numControl", numeroControl.Trim());
-                        using (OracleDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                alumno.NumeroControl = reader["NUMERO_CONTROL"].ToString() ?? string.Empty;
-                                alumno.Nombre = reader["NOMBRE"].ToString() ?? string.Empty;
-                                alumno.Correo = reader["CORREO"].ToString() ?? string.Empty;
-                                alumno.FechaNac = Convert.ToDateTime(reader["FECHA_NAC"]).ToString("dd/MM/yyyy");
-                                alumno.id_Carrera = Convert.ToInt32(reader["ID_CARRERA"]);
-                                alumno.Ids_Discapacidades = reader["DISCAPACIDADES"].ToString() ?? string.Empty;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.RegistrarError("AlumnoRepositorioOracle.ObtenerAlumnoPorNumeroControl", ex);
-                throw;
-            }
-            return alumno;
-
+            using OracleConnection con = Conexion.Obtenercon();
+            con.Open();
+            string sql =
+            @"DELETE FROM
+            ALUMNOS_DISCAPACIDADES
+            WHERE NUMERO_CONTROL = :NumeroControl";
+            OracleCommand cmd =
+                new(sql, con);
+            cmd.Parameters.Add(":NumeroControl", numcontrol);
+            cmd.ExecuteNonQuery();
         }
     }
 }

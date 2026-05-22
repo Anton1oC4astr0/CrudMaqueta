@@ -35,17 +35,41 @@ namespace CrudMaqueta.Views
             }
         }
 
+        /// <summary>
+        /// Devuelve el valor seleccionado en un ComboBox.
+        /// Si no hay selección válida regresa "Todas".
+        /// </summary>
+        private static string ObtenerFiltro(ComboBox cb)
+            => (cb.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todas";
+
         private void AplicarFiltros()
         {
             if (_todosLosAlumnos == null) return;
 
-            string carrera = (cbFiltroCarrera.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todas";
-            string discapacidad = (cbFiltroDiscapacidad.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todas";
+            string carrera      = ObtenerFiltro(cbFiltroCarrera);
+            string discapacidad = ObtenerFiltro(cbFiltroDiscapacidad);
 
             IEnumerable<Alumno> consulta = _todosLosAlumnos;
 
+            // Filtro por carrera
             if (carrera != "Todas")
                 consulta = consulta.Where(a => a.Carrera == carrera);
+
+            // Filtro por discapacidad
+            // "Ninguna" busca alumnos sin ninguna discapacidad registrada;
+            // cualquier otro valor busca alumnos cuya lista de discapacidades lo contenga.
+            if (discapacidad != "Todas")
+            {
+                if (discapacidad == "Ninguna")
+                    consulta = consulta.Where(a =>
+                        string.IsNullOrWhiteSpace(a.Discapacidad) || a.Discapacidad == "Ninguna");
+                else
+                    consulta = consulta.Where(a =>
+                        !string.IsNullOrWhiteSpace(a.Discapacidad) &&
+                        a.Discapacidad.Split(',')
+                            .Select(d => d.Trim())
+                            .Contains(discapacidad, StringComparer.OrdinalIgnoreCase));
+            }
 
             dgAlumnos.ItemsSource = consulta.ToList();
         }
@@ -76,7 +100,11 @@ namespace CrudMaqueta.Views
                     return;
                 }
 
-                AlumnoReporte.Generar(alumnosVisibles);
+                // Pasar los filtros activos al reporte para el nombre del archivo y el encabezado
+                string filtroCarrera      = ObtenerFiltro(cbFiltroCarrera);
+                string filtroDiscapacidad = ObtenerFiltro(cbFiltroDiscapacidad);
+
+                AlumnoReporte.Generar(alumnosVisibles, filtroCarrera, filtroDiscapacidad);
             }
             catch (Exception ex)
             {
