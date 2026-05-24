@@ -1,51 +1,56 @@
-using System;
 using System.IO;
 
 namespace CrudMaqueta.Utils
 {
-    /// <summary>
-    /// Logger sencillo en archivo de texto. Cada llamada agrega una línea
-    /// al archivo errores.log dentro del directorio de la aplicación,
-    /// generando evidencia en tiempo real de las excepciones capturadas.
-    /// </summary>
     public static class Logger
     {
-        // El archivo se crea junto al ejecutable (bin/Debug/.../errores.log)
+        // Ruta del archivo de log junto al ejecutable
         private static readonly string _rutaLog =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "errores.log");
 
+        /// <summary>
+        /// Registra un error en el archivo errores.log
+        /// </summary>
         public static void RegistrarError(string origen, Exception ex)
         {
-            string linea = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}]" +
-                           $"[{origen}]" +
-                           $"[{ex.GetType().Name}: {ex.Message}]";
+            string linea = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] " +
+                           $"[{origen}] " +
+                           $"[ERROR: {ex.GetType().Name} - {ex.Message}]";
 
+            // Intenta escribir, si falla no rompe la aplicación principal
             try
             {
                 File.AppendAllText(_rutaLog, linea + Environment.NewLine);
             }
             catch
             {
-                // Si por alguna razón no se puede escribir el log,
-                // no propagamos la excepción para no romper el flujo principal.
+                // Silenciosamente ignora errores de escritura
             }
         }
 
         /// <summary>
-        /// Registra un mensaje informativo (eventos exitosos, inicio de app, etc.).
+        /// Registra un mensaje informativo (eventos, inicio, operaciones exitosas)
         /// </summary>
         public static void RegistrarInfo(string origen, string mensaje)
         {
-            string linea = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}]" +
-                           $"[INFO][{origen}]{mensaje}";
+            string linea = $"[{DateTime.Now:dd/MM/yyyy HH:mm:ss}] " +
+                           $"[INFO] " +
+                           $"[{origen}] {mensaje}";
 
             try
             {
+                // Imprime error en el archivo errores.log
                 File.AppendAllText(_rutaLog, linea + Environment.NewLine);
             }
-            catch { }
+            catch
+            {
+                
+            }
         }
 
+        /// <summary>
+        /// Propiedad pública para acceder a la ruta del archivo de log
+        /// </summary>
         public static string RutaLog => _rutaLog;
     }
 }

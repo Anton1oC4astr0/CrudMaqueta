@@ -191,7 +191,7 @@ namespace CrudMaqueta.Views
 
             try
             {
-                bool guardado = AlumnoRepositorioOracle.Agregar(alumno);
+                bool guardado = AlumnoRepositorio.Agregar(alumno);
                 if (guardado)
                 {
                     MessageBox.Show($"Alumno {alumno.Nombre} registrado correctamente.");

@@ -235,7 +235,7 @@ namespace CrudMaqueta.Views
 
             try
             {
-                bool exito = AlumnoRepositorioOracle.Actualizar(alumnoActualizado);
+                bool exito = AlumnoRepositorio.Actualizar(alumnoActualizado);
                 if (exito)
                 {
                     MessageBox.Show("Alumno actualizado correctamente.");

@@ -62,7 +62,7 @@ namespace CrudMaqueta.Views
 
             try
             {
-                List<Alumno> resultados = AlumnoRepositorioOracle.ObtenerDatos();
+                List<Alumno> resultados = AlumnoRepositorio.ObtenerDatos();
 
                 // Filtro por número de control (coincidencia parcial, case-insensitive)
                 if (!string.IsNullOrEmpty(numControl))

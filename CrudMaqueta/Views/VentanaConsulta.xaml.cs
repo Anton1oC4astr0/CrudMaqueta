@@ -24,7 +24,7 @@ namespace CrudMaqueta.Views
         {
             try
             {
-                _todosLosAlumnos = AlumnoRepositorioOracle.ObtenerDatos();
+                _todosLosAlumnos = AlumnoRepositorio.ObtenerDatos();
                 dgAlumnos.ItemsSource = _todosLosAlumnos;
             }
             catch (Exception ex)

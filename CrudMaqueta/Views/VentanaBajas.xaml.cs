@@ -31,7 +31,7 @@ namespace CrudMaqueta.Views
         {
             try
             {
-                bool respuesta = AlumnoRepositorioOracle.Eliminar(_alumnoBaja.NumeroControl);
+                bool respuesta = AlumnoRepositorio.Eliminar(_alumnoBaja.NumeroControl);
                 if (respuesta)
                 {
                     MessageBox.Show("El alumno fue eliminado correctamente.");

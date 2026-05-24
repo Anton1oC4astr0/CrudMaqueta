@@ -26,7 +26,7 @@ namespace CrudMaqueta.Views
                 return;
             }
 
-            Alumno? alumno = AlumnoRepositorioOracle.BuscarPorControl(txtBuscar.Text.Trim());
+            Alumno? alumno = AlumnoRepositorio.BuscarPorControl(txtBuscar.Text.Trim());
 
             if (alumno == null)
             {
