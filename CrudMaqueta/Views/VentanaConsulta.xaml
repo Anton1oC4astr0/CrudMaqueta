@@ -18,14 +18,9 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock Text="Filtrar por carrera:" VerticalAlignment="Center" Margin="0,0,8,0"/>
             <ComboBox x:Name="cbFiltroCarrera" Width="230" Height="25"
-                      SelectionChanged="cbFiltroCarrera_SelectionChanged">
-                <ComboBoxItem Content="Todas" IsSelected="True"/>
-                <ComboBoxItem Content="Sistemas Computacionales"/>
-                <ComboBoxItem Content="Industrial"/>
-                <ComboBoxItem Content="Mecatronica"/>
-                <ComboBoxItem Content="Civil"/>
-                <ComboBoxItem Content="Electronica"/>
-            </ComboBox>
+                      DisplayMemberPath="Nombre"
+                      SelectedValuePath="Id"
+                      SelectionChanged="cbFiltroCarrera_SelectionChanged"/>
 
             <TextBlock Text="Filtrar por discapacidad:" VerticalAlignment="Center" Margin="20,0,8,0"/>
             <ComboBox x:Name="cbFiltroDiscapacidad" Width="180" Height="25"
@@ -45,11 +40,13 @@
         <DataGrid Grid.Row="2" x:Name="dgAlumnos"
                   AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No. Control" Binding="{Binding NumeroControl}" Width="100"/>
-                <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="170"/>
-                <DataGridTextColumn Header="Carrera" Binding="{Binding Carrera}" Width="160"/>
-                <DataGridTextColumn Header="Correo" Binding="{Binding Correo}" Width="170"/>
-                <DataGridTextColumn Header="Discapacidad" Binding="{Binding Discapacidad}" Width="130"/>
+                <DataGridTextColumn Header="No. Control"  Binding="{Binding NumeroControl}" Width="100"/>
+                <DataGridTextColumn Header="Nombre"       Binding="{Binding Nombre}"        Width="*"/>
+                <DataGridTextColumn Header="Carrera"      Binding="{Binding Carrera}"        Width="*"/>
+                <DataGridTextColumn Header="Correo"       Binding="{Binding Correo}"         Width="150"/>
+                <DataGridTextColumn Header="Discapacidad" Binding="{Binding Discapacidad}"   Width="110"/>
+                <DataGridTextColumn Header="Fecha Nac."   Binding="{Binding FechaNacimiento, StringFormat=dd/MM/yyyy}" Width="95"/>
+                <DataGridTextColumn Header="Edad"         Binding="{Binding Edad}"           Width="55"/>
             </DataGrid.Columns>
         </DataGrid>
 

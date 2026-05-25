@@ -8,62 +8,72 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- Título dinámico (Modificar / Eliminar) -->
+     
         <TextBlock Grid.Row="0" x:Name="lblTitulo"
                    Text="Modificar Alumnos"
                    FontSize="22" FontWeight="Bold"
                    HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-        <!-- Búsqueda: por número de control o carrera -->
+        <!-- Búsqueda -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-            <TextBlock Text="No. Control:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <TextBox x:Name="txtBuscarControl" Width="160" Height="26" Margin="0,0,15,0"
-                     ToolTip="Buscar por número de control"/>
 
             <TextBlock Text="Carrera:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <ComboBox x:Name="cbFiltroCarrera" Width="220" Height="26" Margin="0,0,15,0">
-                <ComboBoxItem Content="Todas" IsSelected="True"/>
-                <ComboBoxItem Content="Sistemas Computacionales"/>
-                <ComboBoxItem Content="Industrial"/>
-                <ComboBoxItem Content="Electronica"/>
-                <ComboBoxItem Content="Civil"/>
-                <ComboBoxItem Content="Mecatronica"/>
-            </ComboBox>
+            <ComboBox x:Name="cbFiltroCarrera" Width="200" Height="26" Margin="0,0,20,0"
+              DisplayMemberPath="Nombre"
+              SelectedValuePath="Id"/>
+
+            <TextBlock Text="No. Control:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox x:Name="txtBuscarControl" Width="150" Height="26" Margin="0,0,8,0"
+             ToolTip="Buscar por número de control"
+             PreviewTextInput="txtBuscarControl_PreviewTextInput"/>
 
             <Button x:Name="btnBuscar" Content="Buscar"
-                    Width="90" Height="28" Click="btnBuscar_Click"/>
+            Width="90" Height="28" Click="btnBuscar_Click"/>
             <Button x:Name="btnLimpiar" Content="Limpiar"
-                    Width="90" Height="28" Margin="6,0,0,0" Click="btnLimpiar_Click"/>
+            Width="90" Height="28" Margin="6,0,0,0" Click="btnLimpiar_Click"/>
+
         </StackPanel>
 
+        <!--
+            Desde code-behind se actualiza el texto y color según el resultado:
+            - Sin buscar     → "Realiza una búsqueda..." (gris)
+            - Con resultados → "Se encontraron X alumnos." (negro)
+            - Sin resultados → "No se encontraron resultados." (rojo)
+        -->
         <TextBlock Grid.Row="2" x:Name="lblEstado"
                    Text="Realiza una búsqueda para mostrar resultados."
-                   Foreground="Gray" FontStyle="Italic" Margin="0,0,0,8"/>
+                   Foreground="Gray" FontStyle="Italic" Margin="0,0,0,4"/>
 
-        <!-- Tabla de resultados (inicia VACÍA) -->
-        <DataGrid Grid.Row="3" x:Name="dgAlumnos"
+        <TextBlock Grid.Row="3" x:Name="lblErrorSeleccion"
+                   Text="Selecciona un alumno de la lista antes de continuar."
+                   Foreground="Red" FontSize="12"
+                   Visibility="Collapsed" Margin="0,0,0,6"/>
+      
+        <DataGrid Grid.Row="4" x:Name="dgAlumnos"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No. Control" Binding="{Binding NumeroControl}" Width="100"/>
-                <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="170"/>
-                <DataGridTextColumn Header="Carrera" Binding="{Binding Carrera}" Width="160"/>
-                <DataGridTextColumn Header="Correo" Binding="{Binding Correo}" Width="160"/>
-                <DataGridTextColumn Header="Discapacidad" Binding="{Binding Discapacidad}" Width="130"/>
+                <DataGridTextColumn Header="No. Control"  Binding="{Binding NumeroControl}" Width="100"/>
+                <DataGridTextColumn Header="Nombre"       Binding="{Binding Nombre}"        Width="*"/>
+                <DataGridTextColumn Header="Carrera"      Binding="{Binding Carrera}"        Width="*"/>
+                <DataGridTextColumn Header="Correo"       Binding="{Binding Correo}"         Width="150"/>
+                <DataGridTextColumn Header="Discapacidad" Binding="{Binding Discapacidad}"   Width="110"/>
+                <DataGridTextColumn Header="Fecha Nac."   Binding="{Binding FechaNacimiento, StringFormat=dd/MM/yyyy}" Width="95"/>
+                <DataGridTextColumn Header="Edad"         Binding="{Binding Edad}"           Width="55"/>
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- SOLO un botón de acción (Modificar o Eliminar) según el modo -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal"
+        <StackPanel Grid.Row="5" Orientation="Horizontal"
                     HorizontalAlignment="Center" Margin="0,15,0,0">
             <Button x:Name="btnAccion" Content="Modificar"
                     Width="140" Height="35" Margin="5"
-                    Click="btnAccion_Click"/>
+                    Click="btnAccion_Click"
+                    Background="#FF2196F3" Foreground="White"/>
             <Button x:Name="btnCerrar" Content="Cerrar"
                     Width="120" Height="35" Margin="5"
                     Click="btnCerrar_Click"/>
